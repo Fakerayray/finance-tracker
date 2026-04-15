@@ -64,6 +64,19 @@ services:
     networks:
       - public-net
       - internal-net
+  user-service:
+    build: ./user-service
+    networks:
+      - internal-net
+    depends_on:
+      - db
+
+  data-service:
+    build: ./data-service
+    networks:
+      - internal-net
+    depends_on:
+      - db
 # THE NETWORKS
 networks:
   public-net:
