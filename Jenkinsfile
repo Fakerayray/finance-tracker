@@ -20,7 +20,7 @@ pipeline {
             steps {
                 // Removed 'sudo'
 		sh 'docker compose down --remove-orphans'
-                
+                sh 'sudo fuser -k 80/tcp || true'
                 // Explicitly list your app services to avoid restarting Jenkins
                 sh 'docker compose up -d db vault backend frontend nginx'
             }
