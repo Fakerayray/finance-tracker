@@ -1,0 +1,64 @@
+services:
+  # 1. The Database (Isolated)
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: finance_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: supersecretpassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # PERSISTENT STORAGE
+    networks:
+      - internal-net
+
+  # 2. The Vault Service (Hardened)
+  vault:
+    build: ./vault
+    networks:
+      - internal-net
+    depends_on:
+      - db
+
+  # 3. The Backend API (The Bridge)
+  backend:
+    build: ./backend
+    networks:
+      - frontend-net
+      - internal-net # Talks to both layers
+    depends_on:
+      - db
+      - vault
+
+  # 4. The Frontend (UI)
+  frontend:
+    build: ./frontend
+    networks:
+      - frontend-net
+
+  # 5. The Proxy (Public Facing)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - public-net
+      - frontend-net
+    depends_on:
+      - frontend
+      - backend
+
+# THE NETWORKS
+networks:
+  public-net:
+    driver: bridge
+  frontend-net:
+    driver: bridge
+  internal-net:
+    internal: true # SECURITY: No outside internet access for DB/Vault
+
+# THE VOLUMES
+volumes:
+  postgres_data:
