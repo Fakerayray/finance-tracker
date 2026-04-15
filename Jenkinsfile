@@ -19,6 +19,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 // Removed 'sudo'
+		sh 'docker compose down'
                 sh 'docker compose up -d'
             }
         }
