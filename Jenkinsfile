@@ -19,8 +19,10 @@ pipeline {
         stage('Deploy') {
             steps {
                 // Removed 'sudo'
-		sh 'docker compose down'
-                sh 'docker compose up -d'
+		sh 'docker compose down --remove-orphans'
+                
+                // Explicitly list your app services to avoid restarting Jenkins
+                sh 'docker compose up -d db vault backend frontend nginx'
             }
         }
     }
