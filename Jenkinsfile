@@ -2,20 +2,25 @@ pipeline {
     agent any
     
     stages {
-        stage('Checkout') {
+        
+        stage('Build Image') {
             steps {
-                git 'https://github.com/YourUsername/finance-tracker.git'
+                // Building the image first so Trivy has something to scan
+                sh 'sudo docker compose build backend'
             }
         }
+        
         stage('Security Scan') {
             steps {
-                // This runs the Trivy we installed earlier
+                // Running the Trivy scan on the image we just built
                 sh 'trivy image --severity HIGH,CRITICAL finance-tracker-backend'
             }
         }
-        stage('Build & Deploy') {
+        
+        stage('Deploy') {
             steps {
-                sh 'sudo docker compose up --build -d'
+                // Launching the full stack
+                sh 'sudo docker compose up -d'
             }
         }
     }
